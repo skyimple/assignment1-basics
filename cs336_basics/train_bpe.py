@@ -31,10 +31,17 @@ def _split_on_special_tokens(text: str, special_tokens: list[str]) -> list[str]:
 
     No merge may cross a special-token boundary, so we strip them out here
     and feed the resulting segments to the GPT-2 pre-tokenization regex.
+
+    Special tokens are matched longest-first so that overlapping specials
+    (e.g. ``<|endofendoftext|>`` and ``<|endoftext|>``) are split correctly:
+    the longer token is always preferred at any position.
     """
     if not special_tokens:
         return [text]
-    pattern = "|".join(regex.escape(t) for t in special_tokens)
+    # Sort longest-first so the regex engine prefers the longer alternative
+    # when several specials could match at the same position.
+    sorted_specials = sorted(special_tokens, key=len, reverse=True)
+    pattern = "|".join(regex.escape(t) for t in sorted_specials)
     return regex.split(pattern, text)
 
 
