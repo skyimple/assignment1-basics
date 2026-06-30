@@ -92,6 +92,8 @@ class Tokenizer:
         ids: list[int] = []
 
         while True:
+            # merge is sequential
+            # the small index has priority
             best_rank: int | None = None
             best_idx: int = -1
             for i in range(len(tokens) - 1):
